@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 require("dotenv").config();
-const { pinImage, pinMetadata } = require("./functions");
+const { pinImage, pinMetadata, getNfts } = require("./functions");
 const multer = require('multer');
 
 // To get the file through memory using multer.
@@ -18,17 +18,16 @@ const uploadIpfsHandler = async function (req, res) {
       console.log(error);
       return res.status(500).send('File upload failed.');
     }
-
     const { buffer, originalname } = req.file;
-    const { name, description, attributes } = req.body;
+    const { name, description, attributes, address } = req.body;
 
     try {
       const img_hash = await pinImage(buffer, originalname);
       console.log({ img_hash });
-      const metaHash = await pinMetadata(name, description, `ipfs://${img_hash}`, attributes);
+      const metaHash = await pinMetadata(name, description, `ipfs://${img_hash}`, attributes, address);
       res.send({ metaHash });
     } catch (error) {
-      console.log(error);
+      console.log(error.data);
       res.status(500).send('Error occurred during processing.');
     }
   });
@@ -36,5 +35,9 @@ const uploadIpfsHandler = async function (req, res) {
 
 // Route configuration
 router.post('/upload-ipfs', uploadIpfsHandler);
+router.post('/get-nfts', async function (req, res) {
+  const data = await getNfts(req.body.address);
+  res.json(data);
+});
 
 module.exports = router;
