@@ -1,11 +1,19 @@
 import { Link } from "react-router-dom";
 import logo from "../assets/logo.png";
 import profile from "../assets/profile.png";
+import { Web3Button, Web3Modal } from "@web3modal/react";
+import { EthereumClient } from "@web3modal/ethereum";
+import { sepolia } from "wagmi";
+import { projectId, wagmiConfig } from "../main.jsx";
 
 const Navbar = () => {
+  const chains = [sepolia];
+
+  const ethereumClient = new EthereumClient(wagmiConfig, chains);
+
   return (
-    <nav className="bg-slate-200 py-[8px] px-[20px] flex justify-between items-center">
-      <div className="flex gap-[40px] items-center w-full">
+    <nav className="bg-slate-200 sticky top-[0px] py-[8px] px-[20px] flex justify-between items-center">
+      <div className="flex gap-[20px] items-center w-full">
         <div className="flex items-end select-none gap-[2px] ">
           <img src={logo} alt="Welcomint" className=" w-[40px] " />
           <span className="font-poppins font-bold text-[22px]">elcomint</span>
@@ -23,11 +31,8 @@ const Navbar = () => {
         >
           Mint
         </Link>
-        <div 
-        className="flex-1 flex  drop-shadow-xl bg-slate-200 rounded-[8px] items-center px-[15px] border-[2px] border-slate-300"
-        >
-        
-        <span>🔍</span>
+        <div className="flex-1 flex  drop-shadow-xl bg-slate-200 rounded-[8px] items-center px-[15px] border-[2px] border-slate-300">
+          <span>🔍</span>
           <input
             type="text"
             placeholder={` Search NFTs `}
@@ -35,9 +40,13 @@ const Navbar = () => {
           />
         </div>
         <div className="flex items-center  p-[5px] border-black">
-          <span className="px-[14px] py-[7px] font-poppins font-bold border-indigo-500 bg-indigo-500 text-white cursor-pointer border-2 rounded-[3px]">
-            Connect
-          </span>
+          <Web3Button />
+
+          <Web3Modal
+            projectId={projectId}
+            ethereumClient={ethereumClient}
+            defaultChain={sepolia}
+          />
           <img src={profile} className="w-[70px] cursor-pointer" alt="0" />
         </div>
       </div>
