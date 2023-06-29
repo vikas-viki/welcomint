@@ -1,105 +1,24 @@
-import { useState } from "react";
-import axios from "axios";
-import { useAccount } from "wagmi";
+import { useContext } from "react";
+import { Context } from "../context/Context.jsx";
 
 const Mint = () => {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [attributes, setAttributes] = useState([{ title: "", value: "" }]);
-  const [image, setImage] = useState();
-  const [address, setAddress] = useState("");
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [isHovered, setIsHovered] = useState(false);
-
-  const data1 = useAccount({
-    onConnect({ address, connector, isReconnected }) {
-      setAddress(address);
-      console.log(connector);
-    },
-    onDisconnect() {
-      setAddress("");
-      console.log("Disconnected.");
-    },
-  });
-
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      setSelectedImage(e.target.result);
-    };
-
-    reader.readAsDataURL(file);
-    setImage(event.target.files[0]);
-  };
-
-  const handleSubmit = async () => {
-    console.log({ image, name, description, attributes, address });
-    if (address.length == 0) {
-      alert("Please connect your wallet to proceed.");
-    } else if (
-      description.length == 0 ||
-      attributes.length == 0 ||
-      image == null
-    ) {
-      alert("Please fill all the details to proceed.");
-    } else {
-      const data = new FormData();
-      data.append("image", image);
-      data.append("name", name);
-      data.append("description", description);
-      data.append("attributes", attributes);
-      data.append("address", address);
-      const hash = await axios
-        .post("http://localhost:5000/api/v1/upload-ipfs", data)
-        .catch((error) => {
-          console.log(error);
-        });
-
-      console.log(hash);
-    }
-  };
-
-  const handleGetNfts = async () => {
-    const data = new FormData();
-    data.append("address", address);
-    const nfts = await axios
-      .post("http://localhost:5000/api/v1/get-nfts", {
-        address: address,
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-
-    if (nfts === null) {
-      console.log("new user ");
-    } else {
-      console.log(nfts);
-    }
-  };
-
-  const handleImageRemove = () => {
-    setSelectedImage(null);
-  };
-
-  const handleAttributeChange = async (e, _i, t_i) => {
-    const data = await attributes.map((el, i) => {
-      if (i == _i) {
-        if (t_i == "title") {
-          el.title = e.target.value;
-          return el;
-        } else {
-          el.value = e.target.value;
-          return el;
-        }
-      } else {
-        return el;
-      }
-    });
-    setAttributes(data);
-  };
-
+  const {
+    name,
+        setName,
+        attributes,
+        setAttributes,
+        selectedImage,
+        description,
+        setDescription,
+        handleAttributeChange,
+        handleGetNfts,
+        handleImageChange,
+        handleImageRemove,
+        handleSubmit,
+        isHovered,
+        setIsHovered,
+  } = useContext(Context);
+  console.log(attributes)
   return (
     <div
       className="flex  justify-center  flex-wrap items-center  flex-col w-full  "
@@ -133,11 +52,12 @@ const Mint = () => {
           <span className="italic font-normal">(press enter for another)</span>
           {attributes?.map((el, i) => (
             <div
-              key={i}
-              className={`flex ${
-                i !== attributes.length - 1 && "pb-[15px]"
-              } gap-[15px]`}
+            key={i}
+            className={`flex ${
+              i !== attributes.length - 1 && "pb-[15px]"
+            } gap-[15px]`}
             >
+              {console.log(el)}
               <input
                 type="text"
                 name="name"
