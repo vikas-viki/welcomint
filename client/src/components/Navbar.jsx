@@ -47,7 +47,9 @@ const Navbar = () => {
             ethereumClient={ethereumClient}
             defaultChain={sepolia}
           />
-          <img src={profile} className="w-[70px] cursor-pointer" alt="0" />
+          <Link to="/profile">
+            <img src={profile} className="w-[70px] cursor-pointer" alt="0" />
+          </Link>
         </div>
       </div>
     </nav>
