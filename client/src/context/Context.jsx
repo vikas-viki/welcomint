@@ -1,10 +1,15 @@
 import axios from "axios";
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 export const Context = createContext();
+import { Alchemy, Network } from "alchemy-sdk";
+const alchemy = new Alchemy({
+  apiKey: "jAEKmV9y62iWG6flNQ7KpWkikKXv9PJk",
+  network: Network.ETH_SEPOLIA,
+});
 
 // eslint-disable-next-line react/prop-types
-const State = ({children}) => {
+const State = ({ children }) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [attributes, setAttributes] = useState([{ title: "", value: "" }]);
@@ -12,11 +17,12 @@ const State = ({children}) => {
   const [address, setAddress] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [isHovered, setIsHovered] = useState(false);
+  const [NFTs, setNFTs] = useState([]);
+  const [currentNFTpage, setCurrentNFTpage] = useState("All");
 
   const data1 = useAccount({
-    onConnect({ address, connector }) {
+    onConnect({ address }) {
       setAddress(address);
-      console.log(connector);
     },
     onDisconnect() {
       setAddress("");
@@ -85,6 +91,39 @@ const State = ({children}) => {
     setSelectedImage(null);
   };
 
+  const getAllNFTs = async () => {
+    if (address.length > 0) {
+      alchemy.nft
+        .getNftsForOwner(address)
+        .then(async(data) => {
+          console.log(data);
+          const nfts = [];
+          await data.ownedNfts.map(async (el) => {
+            if (
+              el.rawMetadata.name != null ||
+              el.rawMetadata.description != undefined
+            ) {
+              nfts.push({
+                name: el.rawMetadata.name,
+                description: el.rawMetadata.description,
+                image: el.rawMetadata.image,
+                attributes: el.rawMetadata.attributes,
+              });
+            } else {
+              const data = await fetch(el.tokenUri.raw);
+              nfts.push({
+                name: el.title,
+                description: el.description,
+                image: data.url,
+              });
+            }
+          });
+          setNFTs(nfts);
+        })
+        .catch((err) => console.log(err));
+    }
+  };
+
   const handleAttributeChange = (e, index, field) => {
     const updatedAttributes = attributes.map((attribute, i) => {
       if (i === index) {
@@ -95,10 +134,23 @@ const State = ({children}) => {
       }
       return attribute;
     });
-  
+
     setAttributes(updatedAttributes);
   };
-  
+
+  useEffect(() => {
+    getAllNFTs();
+  }, [address]);
+
+  useEffect(() => {
+    if (currentNFTpage == "Listed") {
+      setNFTs([{ title: "listed" }]);
+    } else if (currentNFTpage == "Minted") {
+      setNFTs([{ title: "Minted" }]);
+    } else {
+      getAllNFTs();
+    }
+  }, [currentNFTpage]);
 
   return (
     <Context.Provider
@@ -123,8 +175,15 @@ const State = ({children}) => {
         isHovered,
         setIsHovered,
         data1,
+        NFTs,
+        setNFTs,
+        getAllNFTs,
+        currentNFTpage,
+        setCurrentNFTpage,
       }}
-    >{children}</Context.Provider>
+    >
+      {children}
+    </Context.Provider>
   );
 };
 
