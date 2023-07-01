@@ -19,6 +19,7 @@ const State = ({ children }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [NFTs, setNFTs] = useState([]);
   const [currentNFTpage, setCurrentNFTpage] = useState("All");
+  const [loading, setLoading] = useState(true);
 
   const data1 = useAccount({
     onConnect({ address }) {
@@ -92,6 +93,7 @@ const State = ({ children }) => {
   };
 
   const getAllNFTs = async () => {
+    setLoading(true);
     if (address.length > 0) {
       alchemy.nft
         .getNftsForOwner(address)
@@ -119,6 +121,7 @@ const State = ({ children }) => {
             }
           });
           setNFTs(nfts);
+          setLoading(false);
         })
         .catch((err) => console.log(err));
     }
@@ -180,6 +183,7 @@ const State = ({ children }) => {
         getAllNFTs,
         currentNFTpage,
         setCurrentNFTpage,
+        loading
       }}
     >
       {children}

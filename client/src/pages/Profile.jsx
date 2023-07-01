@@ -3,7 +3,7 @@ import { Context } from "../context/Context";
 import NFTcard from "../components/NFTcard";
 
 const Profile = () => {
-  const { NFTs, setCurrentNFTpage, address, currentNFTpage } =
+  const { NFTs, setCurrentNFTpage, address, currentNFTpage, loading } =
     useContext(Context);
 
   return (
@@ -52,9 +52,13 @@ const Profile = () => {
             </ul>
           </div>
           <div className="flex gap-[100px] p-[50px]">
-            {NFTs.map((el, i) => (
-              <NFTcard key={i} nft={el} />
-            ))}
+            {loading ? (
+              <div className="w-full relative top-[30px] flex justify-center align-middle items-center">
+                <span className="font-semibold text-[18px] cursor-pointer px-[30px] py-[8px] ">Loading...</span>
+              </div>
+            ) : (
+              NFTs.map((el, i) => <NFTcard key={i} nft={el} />)
+            )}
           </div>
         </div>
       ) : (
