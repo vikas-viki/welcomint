@@ -47,8 +47,9 @@ contract Welcomint is ERC721, ERC721URIStorage, ERC721Enumerable {
         });
     }
 
-    // Used to list the nft for sale of a user, initially when minted..
+    // Used to list the nft for sale of a user, initially when minted.
     function listNFT(uint256 price, string memory _tokenURI) external {
+        require(price > 0, "Price must be greater than 0");
         tokenIds.increment();
         uint256 newTokenId = tokenIds.current();
         _safeMint(msg.sender, newTokenId);
@@ -62,31 +63,39 @@ contract Welcomint is ERC721, ERC721URIStorage, ERC721Enumerable {
         emit NFTListed(newTokenId, msg.sender, price);
     }
 
+
     // For the users to list for sale the minted nft.
     function listForSale(uint tokenId, uint _price) external {
+        require(tokenId <= tokenIds.current(), "Invalid token id");
+        require(_price > 0, "Price must be greater than 0");
         Listing storage listing = listings[tokenId];
-        require(listing.seller == msg.sender, "Only owner can list NFTs");
+        require(listing.seller == msg.sender, "Only minted owner can list NFTs");
+        require(listing.active == false, "token is already listed for sale.");
         listing.active = true;
         listing.price = _price;
         listings[tokenId] = listing;
+        emit NFTListed(tokenId, msg.sender, _price);
     }
 
     // For users to calncel the list for sale.
-    function cancelListing(uint tokenId) external {
-        Listing storage listing = listings[tokenId];
+    function cancelListing(uint _tokenId) external {
+        require(_tokenId <= tokenIds.current(), "Invalid token ID");
+        Listing storage listing = listings[_tokenId];
         require(listing.seller == msg.sender, "Only owner can cancel listing");
         listing.active = false;
-        listings[tokenId] = listing;
+        listings[_tokenId] = listing;
     }
 
     // For the users to buy NFT
     function buyNFT(uint256 tokenId) external payable {
         Listing storage listing = listings[tokenId];
         require(listing.active, "NFT not available for sale");
+        require(listing.seller != msg.sender, "Owner can't buy his own nfts.");
         require(msg.value >= listing.price, "Insufficient funds");
 
         address seller = listing.seller;
         listing.active = false;
+        listing.seller = msg.sender;
         listings[tokenId] = listing;
         _transfer(seller, msg.sender, tokenId);
 
