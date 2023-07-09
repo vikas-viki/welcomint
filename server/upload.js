@@ -25,6 +25,7 @@ const uploadIpfsHandler = async function (req, res) {
       const img_hash = await pinImage(buffer, originalname);
       console.log({ img_hash });
       const metaHash = await pinMetadata(name, description, `ipfs://${img_hash}`, attributes, address);
+      console.log({ metaHash });
       res.send({ metaHash });
     } catch (error) {
       console.log(error.data);
