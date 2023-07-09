@@ -1,12 +1,14 @@
 import axios from "axios";
 import { createContext, useEffect, useState } from "react";
-import { useAccount } from "wagmi";
+// import { useAccount, useContractWrite, usePrepareContractWrite } from "wagmi";
+import { useAccount} from "wagmi";
 export const Context = createContext();
 import { Alchemy, Network } from "alchemy-sdk";
 const alchemy = new Alchemy({
   apiKey: "jAEKmV9y62iWG6flNQ7KpWkikKXv9PJk",
   network: Network.ETH_SEPOLIA,
 });
+// import {CAddress, CABI} from "./Constant.js";
 
 // eslint-disable-next-line react/prop-types
 const State = ({ children }) => {
@@ -15,11 +17,27 @@ const State = ({ children }) => {
   const [attributes, setAttributes] = useState([{ title: "", value: "" }]);
   const [image, setImage] = useState();
   const [address, setAddress] = useState("");
+  const [price, setPrice] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [isHovered, setIsHovered] = useState(false);
   const [NFTs, setNFTs] = useState([]);
   const [currentNFTpage, setCurrentNFTpage] = useState("All");
   const [loading, setLoading] = useState(true);
+  const [listForSale, setListForSale] = useState(false);
+  
+/*
+  const { config: listNewNFTConfig } = usePrepareContractWrite({
+    address: "0xecb504d39723b0be0e3a9aa33d646642d1051ee1",
+    abi: ["abi"],
+    functionName: "listNFT",
+  });
+
+  const {
+    data: listNewNFTData,
+    isLoading: listNewNFTLoading,
+    isSuccess: listNewNFTSuccess,
+    write: listNewNFT,
+  } = useContractWrite(listNewNFTConfig);*/
 
   const data1 = useAccount({
     onConnect({ address }) {
@@ -44,14 +62,16 @@ const State = ({ children }) => {
   };
 
   const handleSubmit = async () => {
-    console.log({ image, name, description, attributes, address });
-    if (address.length == 0) {
-      alert("Please connect your wallet to proceed.");
-    } else if (
-      description.length == 0 ||
-      attributes.length == 0 ||
-      image == null
-    ) {
+    console.log({
+      image,
+      name,
+      description,
+      attributes,
+      address,
+      listForSale,
+      price,
+    });
+    if (description.length == 0 || image == null) {
       alert("Please fill all the details to proceed.");
     } else {
       const data = new FormData();
@@ -60,13 +80,12 @@ const State = ({ children }) => {
       data.append("description", description);
       data.append("attributes", attributes);
       data.append("address", address);
-      const hash = await axios
+      const tokenURI = await axios
         .post("http://localhost:5000/api/v1/upload-ipfs", data)
         .catch((error) => {
           console.log(error);
         });
-
-      console.log(hash);
+        console.log(tokenURI);
     }
   };
 
@@ -97,7 +116,7 @@ const State = ({ children }) => {
     if (address.length > 0) {
       alchemy.nft
         .getNftsForOwner(address)
-        .then(async(data) => {
+        .then(async (data) => {
           console.log(data);
           const nfts = [];
           await data.ownedNfts.map(async (el) => {
@@ -183,7 +202,11 @@ const State = ({ children }) => {
         getAllNFTs,
         currentNFTpage,
         setCurrentNFTpage,
-        loading
+        loading,
+        price,
+        setPrice,
+        listForSale,
+        setListForSale,
       }}
     >
       {children}

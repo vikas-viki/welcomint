@@ -1,24 +1,31 @@
 import { useContext } from "react";
 import { Context } from "../context/Context.jsx";
+import { useWeb3Modal } from "@web3modal/react";
 
 const Mint = () => {
+  const { open } = useWeb3Modal();
+
   const {
     name,
-        setName,
-        attributes,
-        setAttributes,
-        selectedImage,
-        description,
-        setDescription,
-        handleAttributeChange,
-        handleGetNfts,
-        handleImageChange,
-        handleImageRemove,
-        handleSubmit,
-        isHovered,
-        setIsHovered,
+    setName,
+    attributes,
+    setAttributes,
+    selectedImage,
+    description,
+    setDescription,
+    handleAttributeChange,
+    handleImageChange,
+    handleImageRemove,
+    handleSubmit,
+    isHovered,
+    setIsHovered,
+    price,
+    setPrice,
+    address,
+    listForSale,
+    setListForSale,
   } = useContext(Context);
-  console.log(attributes)
+  console.log(attributes);
   return (
     <div
       className="flex  justify-center  flex-wrap items-center  flex-col w-full  "
@@ -52,10 +59,10 @@ const Mint = () => {
           <span className="italic font-normal">(press enter for another)</span>
           {attributes?.map((el, i) => (
             <div
-            key={i}
-            className={`flex ${
-              i !== attributes.length - 1 && "pb-[15px]"
-            } gap-[15px]`}
+              key={i}
+              className={`flex ${
+                i !== attributes.length - 1 && "pb-[15px]"
+              } gap-[15px]`}
             >
               {console.log(el)}
               <input
@@ -136,7 +143,9 @@ const Mint = () => {
               )}
             </>
           ) : (
-            <span className="opacity-80 text-sky-600">Drop your NFT here</span>
+            <span className="opacity-80 text-sky-600 z-0">
+              Drop your NFT here
+            </span>
           )}
         </div>
         <input
@@ -146,15 +155,43 @@ const Mint = () => {
           id="nft-image-input"
           className="hidden"
         />
+        <div className="flex gap-[10px] justify-center items-center cursor-pointer">
+          <input
+            type="checkbox"
+            name="listForSale"
+            checked={listForSale}
+            onChange={(e) => {
+              setListForSale(e.target.checked);
+            }}
+            className="w-[22px] h-[22px]"
+            id="listForSale"
+          />
+          <label htmlFor="listForSale" className="w-full font-semibold p-1">
+            List for sale
+          </label>
+        </div>
+        {listForSale === true && (
+          <label htmlFor="nft-name" className="w-full font-semibold p-1">
+            Price(ETH) *
+            <input
+              type="number"
+              name="name"
+              id="nft-name"
+              value={price}
+              placeholder="0.01"
+              className="border-[3px] border-indigo-500 font-normal font-poppins focus:border-green-500 outline-none rounded-[7px] p-3 w-full"
+              onChange={(e) => {
+                setPrice(e.target.value);
+              }}
+            />
+          </label>
+        )}
         <button
           className="button rounded-full bg-indigo-700 text-[20px] font-semibold leading-8 self-center p-[10px] w-[350px] text-white border-2 border-indigo-500"
-          onClick={handleSubmit}
+          onClick={address.length > 0 ? handleSubmit : open}
         >
-          Submit
+          {address.length > 0 ? "Submit" : "Connect Wallet"}
         </button>
-      </div>
-      <div className="hidden">
-        <button onClick={handleGetNfts}>get NFTS</button>
       </div>
     </div>
   );
