@@ -24,6 +24,7 @@ const Mint = () => {
     address,
     listForSale,
     setListForSale,
+    imageUploadLoading,
   } = useContext(Context);
   console.log(attributes);
   return (
@@ -127,21 +128,25 @@ const Mint = () => {
           }}
         >
           {selectedImage ? (
-            <>
-              <img
-                src={selectedImage}
-                alt="Selected NFT"
-                className="w-full h-full object-contain"
-              />
-              {isHovered && (
-                <button
-                  className="z-10 absolute  p-[8px] border-2 border-indigo-600 text-white rounded-[20px] bg-indigo-500  transition-opacity hover:opacity-90"
-                  onClick={handleImageRemove}
-                >
-                  Change
-                </button>
-              )}
-            </>
+            imageUploadLoading == false ? (
+              <>
+                <img
+                  src={selectedImage}
+                  alt="Selected NFT"
+                  className="w-full h-full object-contain"
+                />
+                {isHovered && (
+                  <button
+                    className="z-10 absolute  p-[8px] border-2 border-indigo-600 text-white rounded-[20px] bg-indigo-500  transition-opacity hover:opacity-90"
+                    onClick={handleImageRemove}
+                  >
+                    Change
+                  </button>
+                )}
+              </>
+            ) : (
+              <span className="font-semibold">Loading...</span>
+            )
           ) : (
             <span className="opacity-80 text-sky-600 z-0">
               Drop your NFT here
@@ -154,7 +159,9 @@ const Mint = () => {
           name="image"
           id="nft-image-input"
           className="hidden"
+          accept=".jpg, .jpeg, .png, .gif"
         />
+
         <div className="flex gap-[10px] justify-center items-center cursor-pointer">
           <input
             type="checkbox"
@@ -166,12 +173,12 @@ const Mint = () => {
             className="w-[22px] h-[22px]"
             id="listForSale"
           />
-          <label htmlFor="listForSale" className="w-full font-semibold p-1">
+          <label htmlFor="listForSale" className="w-full cursor-pointer font-semibold p-1">
             List for sale
           </label>
         </div>
         {listForSale === true && (
-          <label htmlFor="nft-name" className="w-full font-semibold p-1">
+          <label htmlFor="nft-name" className="w-full cursor-pointer font-semibold p-1">
             Price(ETH) *
             <input
               type="number"

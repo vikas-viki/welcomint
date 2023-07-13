@@ -1,16 +1,12 @@
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
-import { QueryClient, QueryClientProvider } from "react-query";
-import { createConfig, configureChains, WagmiConfig } from "wagmi";
+import { createConfig, configureChains, WagmiConfig, sepolia } from "wagmi";
 import { w3mConnectors, w3mProvider } from "@web3modal/ethereum";
-import { mainnet } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
 import State from "./context/Context.jsx";
 
-const queryClient = new QueryClient();
-
-const chains = [mainnet];
+const chains = [sepolia];   
 export const projectId = "753ca87e729b296cfedf813f7eef158b";
 
 const { publicClient, webSocketPublicClient } = configureChains(chains, [
@@ -27,11 +23,9 @@ export const wagmiConfig = createConfig({
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <QueryClientProvider client={queryClient} contextSharing={true}>
-    <WagmiConfig config={wagmiConfig}>
+    <WagmiConfig config={wagmiConfig} >
       <State>
         <App />
       </State>
     </WagmiConfig>
-  </QueryClientProvider>
 );

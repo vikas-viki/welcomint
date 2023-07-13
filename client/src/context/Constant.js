@@ -1,5 +1,33 @@
-export const CAddress = '0x8Ff55F765dFc72Af795c164A4b6705f7BD02035f';
+export const CAddress = '0x0E053ce27794b0B3eAFc316446ceD321B50d0Cd5';
 export const CABI = [
+	{
+		"inputs": [],
+		"name": "getAllNFTs",
+		"outputs": [
+			{
+				"internalType": "uint256[]",
+				"name": "",
+				"type": "uint256[]"
+			},
+			{
+				"internalType": "string[]",
+				"name": "",
+				"type": "string[]"
+			},
+			{
+				"internalType": "address[]",
+				"name": "",
+				"type": "address[]"
+			},
+			{
+				"internalType": "bool[]",
+				"name": "",
+				"type": "bool[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
 	{
 		"inputs": [],
 		"stateMutability": "nonpayable",
@@ -372,6 +400,7 @@ export const CABI = [
 		"stateMutability": "view",
 		"type": "function"
 	},
+	
 	{
 		"inputs": [
 			{
@@ -397,25 +426,6 @@ export const CABI = [
 				"internalType": "address",
 				"name": "owner",
 				"type": "address"
-			}
-		],
-		"name": "getTokensByOwner",
-		"outputs": [
-			{
-				"internalType": "string[]",
-				"name": "",
-				"type": "string[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
 			},
 			{
 				"internalType": "address",
@@ -429,6 +439,40 @@ export const CABI = [
 				"internalType": "bool",
 				"name": "",
 				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "listings",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "seller",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "price",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "active",
+				"type": "bool"
+			},
+			{
+				"internalType": "string",
+				"name": "tokenUri",
+				"type": "string"
 			}
 		],
 		"stateMutability": "view",
@@ -573,4 +617,4 @@ export const CABI = [
 		"stateMutability": "view",
 		"type": "function"
 	}
-];
+]

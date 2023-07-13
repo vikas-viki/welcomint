@@ -1,7 +1,8 @@
 import axios from "axios";
 import { createContext, useEffect, useState } from "react";
-import { useAccount, useContractWrite } from "wagmi";
+import { useAccount, useContractRead, useContractWrite } from "wagmi";
 // import {useNavigate} from "react-router-dom";
+// import { useContractRead } from "wagmi";
 export const Context = createContext();
 import { Alchemy, Network } from "alchemy-sdk";
 const alchemy = new Alchemy({
@@ -26,6 +27,20 @@ const State = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [listForSale, setListForSale] = useState(false);
   const [tokenURI, setTokenURI] = useState("");
+  const [imageUploadLoading, setImageUploadLoading] = useState(false);
+  const [allContractNfts, setAllContractNfts] = useState(null);
+
+  const {refetch} = useContractRead({
+    address: CAddress,
+    abi: CABI,
+    functionName: 'getAllNFTs',
+    onSuccess(data) {
+      console.log('Success', data);
+      setAllContractNfts(data);
+    },
+  })
+
+
 
   const {
     data: listNewNFTData,
@@ -38,6 +53,7 @@ const State = ({ children }) => {
     functionName: "listNFT",
   });
 
+
   const data1 = useAccount({
     onConnect({ address }) {
       setAddress(address);
@@ -48,16 +64,18 @@ const State = ({ children }) => {
     },
   });
 
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
+  const handleImageChange = async (event) => {
+    setImageUploadLoading(true);
+    const file = await event.target.files[0];
     const reader = new FileReader();
 
-    reader.onload = (e) => {
-      setSelectedImage(e.target.result);
+    reader.onload = async (e) => {
+      await setSelectedImage(e.target.result);
     };
 
-    reader.readAsDataURL(file);
-    setImage(event.target.files[0]);
+    await reader.readAsDataURL(file);
+    await setImage(event.target.files[0]);
+    setImageUploadLoading(false);
   };
 
   const handleSubmit = async () => {
@@ -96,16 +114,20 @@ const State = ({ children }) => {
         args: [ethers.parseEther(String(Number(price))), tokenURI],
       });
     } catch (error) {
-      console.log(error);
+      console.log(error); 
     }
+    refetch();
   };
 
-  const handleGetNfts = async () => {
+  const handleGetMintedNfts = async () => {
     const data = new FormData();
     data.append("address", address);
     const nfts = await axios
       .post("http://localhost:5000/api/v1/get-nfts", {
         address: address,
+      })
+      .then((data) => {
+        console.log("SERVER",data);
       })
       .catch((error) => {
         console.log(error);
@@ -173,7 +195,9 @@ const State = ({ children }) => {
 
   useEffect(() => {
     getAllNFTs();
+    handleGetMintedNfts();
   }, [address]);
+
 
   useEffect(() => {
     console.log(listNewNFTData, listNewNFTLoading, listNewNFTSuccess);
@@ -205,7 +229,7 @@ const State = ({ children }) => {
         description,
         setDescription,
         handleAttributeChange,
-        handleGetNfts,
+        handleGetMintedNfts,
         handleImageChange,
         handleImageRemove,
         handleSubmit,
@@ -222,6 +246,8 @@ const State = ({ children }) => {
         setPrice,
         listForSale,
         setListForSale,
+        imageUploadLoading,
+        allContractNfts
       }}
     >
       {children}
