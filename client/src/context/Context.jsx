@@ -304,6 +304,8 @@ const State = ({ children }) => {
         imageUploadLoading,
         allContractNfts,
         refetch,
+        userListedNfts,
+        userMintedNfts
       }}
     >
       {children}

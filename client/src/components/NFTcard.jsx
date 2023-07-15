@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useWeb3Modal } from "@web3modal/react";
 import "../App.css";
-const NFTcard = ({ nft }) => {
+const NFTcard = ({ nft, buy }) => {
   const imageUrl = nft.image.split("/");
 
   const { isOpen } = useWeb3Modal();
@@ -17,15 +17,22 @@ const NFTcard = ({ nft }) => {
         alt="img"
         className="w-[234px] h-[249px] rounded-[15px] nft-img"
       />
-      <span className=" hidden rounded-[15px] nft-desc text-[#fff]">
-      {nft.description.length > 0
-              ? nft.description.length >= 100
-                ? nft.description.slice(0, 100).trim() + "..."
-                : nft.description
-              : "Unknown"}
-      </span>
+      <div className="nft-desc hidden flex-col h-[200px] items-center justify-between overflow-hidden " >
+        <span className="  rounded-[15px]  text-[#fff] text-center h-full">
+          {nft.description.length > 0
+            ? nft.description.length >= 100
+              ? nft.description.slice(0, 100).trim() + "..."
+              : nft.description
+            : "Unknown"}
+        </span>
+        {buy == true && (
+          <button className="nft-buy mt-[30px] absolute px-[20px] py-[8px] border-2 border-indigo-600 text-white rounded-[20px] bg-indigo-500  transition-opacity hover:opacity-90">
+            BUY
+          </button>
+        )}
+      </div>
       {nft.price > 0 ? (
-        <div className="flex justify-between"> 
+        <div className="flex justify-between">
           <span className="font-bold m-2 py-[5px] font-poppins text-[16px] break-words">
             {nft.name.length > 0
               ? nft.name.length >= 17

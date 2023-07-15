@@ -13,7 +13,7 @@ const Navbar = () => {
 
   return (
     <nav className="bg-slate-200 z-10 sticky top-[0px] py-[8px] px-[20px] flex justify-between items-center">
-      <div className="flex gap-[20px] items-center w-full">
+      <div className="flex gap-[20px] items-center justify-center w-full">
         <div className="flex items-end select-none gap-[2px] ">
           <img src={logo} alt="Welcomint" className=" w-[40px] " />
           <span className="font-poppins font-bold text-[22px]">elcomint</span>
@@ -31,7 +31,7 @@ const Navbar = () => {
         >
           Mint
         </Link>
-        <div className="flex-1 flex  drop-shadow-xl bg-slate-200 rounded-[8px] items-center px-[15px] border-[2px] border-slate-300">
+        <div className="flex-1 flex  drop-shadow-xl bg-slate-200 rounded-[8px] items-center px-[15px] border-[2px] border-slate-300 max-w-[950px]">
           <span>🔍</span>
           <input
             type="text"
