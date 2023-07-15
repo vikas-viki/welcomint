@@ -29,18 +29,55 @@ const State = ({ children }) => {
   const [tokenURI, setTokenURI] = useState("");
   const [imageUploadLoading, setImageUploadLoading] = useState(false);
   const [allContractNfts, setAllContractNfts] = useState(null);
+  const [userListedNfts, setUserListedNfts] = useState(null);
+  const [userMintedNfts, setUserMintedNfts] = useState(null);
+  const [allAlchemyNfts, setAllAlchemyNfts] = useState(null);
 
-  const {refetch} = useContractRead({
+  const { refetch } = useContractRead({
     address: CAddress,
     abi: CABI,
-    functionName: 'getAllNFTs',
-    onSuccess(data) {
-      console.log('Success', data);
-      setAllContractNfts(data);
+    functionName: "getAllNFTs",
+    async onSuccess(data) {
+      let all = [];
+      let list = [];
+      let mint = [];
+
+      for (let i = 1; i < data[2].length; i++) {
+        const response = await fetch(`https://ipfs.io/ipfs/${data[1][i]}`);
+        const fetchedData = await response.json(); // Assuming the response data is in JSON format
+        if(Number(data[0][i]) > 0){
+          list.push({
+            price: Number(data[0][i]),
+            forSale: String(data[3][i]),
+            seller: String(data[2][i]),
+            name: fetchedData.name,
+            description: fetchedData.description,
+            image: fetchedData.image,
+          });
+        }else{
+          mint.push({
+            price: Number(data[0][i]),
+            forSale: String(data[3][i]),
+            seller: String(data[2][i]),
+            name: fetchedData.name,
+            description: fetchedData.description,
+            image: fetchedData.image,
+          });
+        }
+        all.push({
+          price: Number(data[0][i]),
+          forSale: String(data[3][i]),
+          seller: String(data[2][i]),
+          name: fetchedData.name,
+          description: fetchedData.description,
+          image: fetchedData.image,
+        });
+      }
+      setUserListedNfts(list);
+      setUserMintedNfts(mint);
+      setAllContractNfts(all);
     },
-  })
-
-
+  });
 
   const {
     data: listNewNFTData,
@@ -53,6 +90,16 @@ const State = ({ children }) => {
     functionName: "listNFT",
   });
 
+  const {
+    data: mintedNFT,
+    isLoading: minting,
+    isSuccess: minted,
+    write: mintNewNFT,
+  } = useContractWrite({
+    address: CAddress,
+    abi: CABI,
+    functionName: "safeMint",
+  });
 
   const data1 = useAccount({
     onConnect({ address }) {
@@ -89,7 +136,7 @@ const State = ({ children }) => {
         listForSale,
         price,
       });
-      if (Number(price) <= 0) {
+      if (listForSale == true && Number(price) <= 0) {
         alert("Price must not be 0");
         return;
       }
@@ -110,11 +157,17 @@ const State = ({ children }) => {
         setTokenURI(token_URI.data.metaHash.IpfsHash);
         console.log(token_URI.data.metaHash.IpfsHash);
       }
-      await listNewNFT({
-        args: [ethers.parseEther(String(Number(price))), tokenURI],
-      });
+      if (listForSale == true && price > 0) {
+        await listNewNFT({
+          args: [ethers.parseEther(String(Number(price))), tokenURI],
+        });
+      } else {
+        await mintNewNFT({
+          args: [tokenURI],
+        });
+      }
     } catch (error) {
-      console.log(error); 
+      console.log(error);
     }
     refetch();
   };
@@ -127,7 +180,7 @@ const State = ({ children }) => {
         address: address,
       })
       .then((data) => {
-        console.log("SERVER",data);
+        console.log("SERVER", data);
       })
       .catch((error) => {
         console.log(error);
@@ -172,6 +225,7 @@ const State = ({ children }) => {
               });
             }
           });
+          setAllAlchemyNfts(nfts);
           setNFTs(nfts);
           setLoading(false);
         })
@@ -196,20 +250,21 @@ const State = ({ children }) => {
   useEffect(() => {
     getAllNFTs();
     handleGetMintedNfts();
+    refetch();
   }, [address]);
-
 
   useEffect(() => {
     console.log(listNewNFTData, listNewNFTLoading, listNewNFTSuccess);
-  }, [listNewNFTData, listNewNFTLoading, listNewNFTSuccess]);
+    console.log(minted, minting, mintedNFT);
+  }, [listNewNFTData, mintedNFT]);
 
   useEffect(() => {
     if (currentNFTpage == "Listed") {
-      setNFTs([{ title: "listed" }]);
+      setNFTs(userListedNfts);
     } else if (currentNFTpage == "Minted") {
-      setNFTs([{ title: "Minted" }]);
+      setNFTs(userMintedNfts);
     } else {
-      getAllNFTs();
+      setNFTs(allAlchemyNfts);
     }
   }, [currentNFTpage]);
 
@@ -247,7 +302,8 @@ const State = ({ children }) => {
         listForSale,
         setListForSale,
         imageUploadLoading,
-        allContractNfts
+        allContractNfts,
+        refetch,
       }}
     >
       {children}

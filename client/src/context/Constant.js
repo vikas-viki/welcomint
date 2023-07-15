@@ -1,33 +1,5 @@
-export const CAddress = '0x0E053ce27794b0B3eAFc316446ceD321B50d0Cd5';
+export const CAddress = '0x150bFD65aAc539335A888DB4D2fe90B09737AfB4';
 export const CABI = [
-	{
-		"inputs": [],
-		"name": "getAllNFTs",
-		"outputs": [
-			{
-				"internalType": "uint256[]",
-				"name": "",
-				"type": "uint256[]"
-			},
-			{
-				"internalType": "string[]",
-				"name": "",
-				"type": "string[]"
-			},
-			{
-				"internalType": "address[]",
-				"name": "",
-				"type": "address[]"
-			},
-			{
-				"internalType": "bool[]",
-				"name": "",
-				"type": "bool[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
 	{
 		"inputs": [],
 		"stateMutability": "nonpayable",
@@ -400,7 +372,34 @@ export const CABI = [
 		"stateMutability": "view",
 		"type": "function"
 	},
-	
+	{
+		"inputs": [],
+		"name": "getAllNFTs",
+		"outputs": [
+			{
+				"internalType": "uint256[]",
+				"name": "",
+				"type": "uint256[]"
+			},
+			{
+				"internalType": "string[]",
+				"name": "",
+				"type": "string[]"
+			},
+			{
+				"internalType": "address[]",
+				"name": "",
+				"type": "address[]"
+			},
+			{
+				"internalType": "bool[]",
+				"name": "",
+				"type": "bool[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
 	{
 		"inputs": [
 			{

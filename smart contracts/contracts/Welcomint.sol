@@ -5,8 +5,14 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract Welcomint is ERC721, ERC721URIStorage, ERC721Enumerable {
+contract Welcomint is
+    ERC721,
+    ERC721URIStorage,
+    ERC721Enumerable,
+    ReentrancyGuard
+{
     using Counters for Counters.Counter;
     Counters.Counter private tokenIds;
 
@@ -19,7 +25,7 @@ contract Welcomint is ERC721, ERC721URIStorage, ERC721Enumerable {
         string tokenUri;
     }
 
-    mapping(uint256 => Listing) private listings;
+    mapping(uint256 => Listing) public listings;
 
     event NFTListed(
         uint256 indexed tokenId,
@@ -34,7 +40,7 @@ contract Welcomint is ERC721, ERC721URIStorage, ERC721Enumerable {
     );
 
     // For users if they don't want to sale, like they just want to mint.
-    function safeMint(string memory _tokenURI) public {
+    function safeMint(string memory _tokenURI) external nonReentrant {
         tokenIds.increment();
         uint256 newTokenId = tokenIds.current();
         _safeMint(msg.sender, newTokenId);
@@ -48,7 +54,10 @@ contract Welcomint is ERC721, ERC721URIStorage, ERC721Enumerable {
     }
 
     // Used to list the nft for sale of a user, initially when minted.
-    function listNFT(uint256 price, string memory _tokenURI) external {
+    function listNFT(uint256 price, string memory _tokenURI)
+        external
+        nonReentrant
+    {
         require(price > 0, "Price must be greater than 0");
         tokenIds.increment();
         uint256 newTokenId = tokenIds.current();
@@ -63,13 +72,15 @@ contract Welcomint is ERC721, ERC721URIStorage, ERC721Enumerable {
         emit NFTListed(newTokenId, msg.sender, price);
     }
 
-
     // For the users to list for sale the minted nft.
-    function listForSale(uint tokenId, uint _price) external {
+    function listForSale(uint256 tokenId, uint256 _price) external {
         require(tokenId <= tokenIds.current(), "Invalid token id");
         require(_price > 0, "Price must be greater than 0");
         Listing storage listing = listings[tokenId];
-        require(listing.seller == msg.sender, "Only minted owner can list NFTs");
+        require(
+            listing.seller == msg.sender,
+            "Only minted owner can list NFTs"
+        );
         require(listing.active == false, "token is already listed for sale.");
         listing.active = true;
         listing.price = _price;
@@ -78,7 +89,7 @@ contract Welcomint is ERC721, ERC721URIStorage, ERC721Enumerable {
     }
 
     // For users to calncel the list for sale.
-    function cancelListing(uint _tokenId) external {
+    function cancelListing(uint256 _tokenId) external {
         require(_tokenId <= tokenIds.current(), "Invalid token ID");
         Listing storage listing = listings[_tokenId];
         require(listing.seller == msg.sender, "Only owner can cancel listing");
@@ -87,10 +98,10 @@ contract Welcomint is ERC721, ERC721URIStorage, ERC721Enumerable {
     }
 
     // For the users to buy NFT
-    function buyNFT(uint256 tokenId) external payable {
+    function buyNFT(uint256 tokenId) external payable nonReentrant {
         Listing storage listing = listings[tokenId];
         require(listing.active, "NFT not available for sale");
-        require(listing.seller != msg.sender, "Owner can't buy his own nfts.");
+        require(listing.seller != msg.sender, "Owner can't buy his own NFTs.");
         require(msg.value >= listing.price, "Insufficient funds");
 
         address seller = listing.seller;
@@ -99,11 +110,9 @@ contract Welcomint is ERC721, ERC721URIStorage, ERC721Enumerable {
         listings[tokenId] = listing;
         _transfer(seller, msg.sender, tokenId);
 
-        emit NFTSold(tokenId, seller, msg.sender, listing.price);
+        payable(seller).transfer(listing.price);
 
-        if (msg.value > listing.price) {
-            payable(msg.sender).transfer(msg.value - listing.price);
-        }
+        emit NFTSold(tokenId, seller, msg.sender, listing.price);
     }
 
     // The following functions are overrides required by Solidity.
@@ -141,18 +150,24 @@ contract Welcomint is ERC721, ERC721URIStorage, ERC721Enumerable {
         return super.supportsInterface(interfaceId);
     }
 
-    function getTokensByOwner(address owner)
+    function getAllNFTs()
         public
         view
-        returns (string[] memory)
+        returns (uint[] memory, string[] memory, address[] memory, bool[] memory)
     {
-        uint256 tokenCount = balanceOf(owner);
-        string[] memory tokens = new string[](tokenCount);
+        uint256 tokenCount = tokenIds.current();
+        uint[] memory _price = new uint[](tokenCount);
+        string[] memory uris = new string[](tokenCount);
+        address[] memory seller = new address[](tokenCount);
+        bool[] memory listed = new bool[](tokenCount);
 
         for (uint256 i = 0; i < tokenCount; i++) {
-            tokens[i] = tokenURI(tokenOfOwnerByIndex(owner, i));
+            _price[i] = listings[i].price;
+            uris[i] = listings[i].tokenUri;
+            seller[i] = listings[i].seller;
+            listed[i] = listings[i].active;
         }
 
-        return tokens;
+        return (_price, uris, seller, listed);
     }
 }

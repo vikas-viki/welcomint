@@ -1,10 +1,16 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { Context } from "../context/Context";
 import NFTcard from "../components/NFTcard";
 
 const Profile = () => {
-  const { NFTs, setCurrentNFTpage, address, currentNFTpage, loading } =
+  const { NFTs, setCurrentNFTpage, address, currentNFTpage, loading, refetch, allContractNfts } =
     useContext(Context);
+
+
+    useEffect(()=>{
+      refetch();
+      console.log(allContractNfts);
+    }, []);
 
   return (
     <>
@@ -51,7 +57,7 @@ const Profile = () => {
               </li>
             </ul>
           </div>
-          <div className="flex gap-[100px] p-[50px]">
+          <div className="flex gap-[100px] p-[50px] flex-wrap justify-center">
             {loading ? (
               <div className="w-full relative top-[30px] flex justify-center align-middle items-center">
                 <span className="font-semibold text-[18px] cursor-pointer px-[30px] py-[8px] ">Loading...</span>
