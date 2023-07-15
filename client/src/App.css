@@ -1,6 +1,25 @@
 #root {
-  max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
+}
+
+.nft-card{
+  overflow: hidden;
+}
+
+.nft-card:hover .nft-img{
+  transition: all 0.5s;
+  height: 0px;
+  width: 0px;
+  position: relative;
+  opacity: 0;
+}
+
+.nft-card:hover .nft-desc{
+  transition: all 0.5s;
+  display: inline;
+}
+
+.nft-desc{
+  word-wrap: break-word;
 }

@@ -12,7 +12,7 @@ const Navbar = () => {
   const ethereumClient = new EthereumClient(wagmiConfig, chains);
 
   return (
-    <nav className="bg-slate-200 sticky top-[0px] py-[8px] px-[20px] flex justify-between items-center">
+    <nav className="bg-slate-200 z-10 sticky top-[0px] py-[8px] px-[20px] flex justify-between items-center">
       <div className="flex gap-[20px] items-center w-full">
         <div className="flex items-end select-none gap-[2px] ">
           <img src={logo} alt="Welcomint" className=" w-[40px] " />
