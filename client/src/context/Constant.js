@@ -1,4 +1,4 @@
-export const CAddress = '0x150bFD65aAc539335A888DB4D2fe90B09737AfB4';
+export const CAddress = '0x96ABd721a8d2a64CA7427009648F746C761f33aE';
 export const CABI = [
 	{
 		"inputs": [],

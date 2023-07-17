@@ -6,6 +6,9 @@ import { w3mConnectors, w3mProvider } from "@web3modal/ethereum";
 import { publicProvider } from "wagmi/providers/public";
 import State from "./context/Context.jsx";
 
+import { BrowserRouter } from "react-router-dom";
+
+
 const chains = [sepolia];   
 export const projectId = "753ca87e729b296cfedf813f7eef158b";
 
@@ -23,9 +26,11 @@ export const wagmiConfig = createConfig({
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
+  <BrowserRouter>
     <WagmiConfig config={wagmiConfig} >
       <State>
         <App />
       </State>
     </WagmiConfig>
+  </BrowserRouter>
 );

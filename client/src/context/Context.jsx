@@ -1,8 +1,8 @@
 import axios from "axios";
 import { createContext, useEffect, useState } from "react";
 import { useAccount, useContractRead, useContractWrite } from "wagmi";
-// import {useNavigate} from "react-router-dom";
-// import { useContractRead } from "wagmi";
+import { useNavigate } from "react-router-dom";
+import BigNumber from "bignumber.js";
 export const Context = createContext();
 import { Alchemy, Network } from "alchemy-sdk";
 const alchemy = new Alchemy({
@@ -14,6 +14,7 @@ import { CAddress, CABI } from "./Constant.js";
 
 // eslint-disable-next-line react/prop-types
 const State = ({ children }) => {
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [attributes, setAttributes] = useState([{ title: "", value: "" }]);
@@ -41,37 +42,47 @@ const State = ({ children }) => {
       let all = [];
       let list = [];
       let mint = [];
-
+      console.log(data);
       for (let i = 1; i < data[2].length; i++) {
-        const response = await fetch(`https://ipfs.io/ipfs/${data[1][i]}`);
-        const fetchedData = await response.json(); // Assuming the response data is in JSON format
-        if(Number(data[0][i]) > 0){
-          list.push({
-            price: Number(data[0][i]),
-            forSale: String(data[3][i]),
-            seller: String(data[2][i]),
-            name: fetchedData.name,
-            description: fetchedData.description,
-            image: fetchedData.image,
-          });
-        }else{
-          mint.push({
-            price: Number(data[0][i]),
-            forSale: String(data[3][i]),
-            seller: String(data[2][i]),
-            name: fetchedData.name,
-            description: fetchedData.description,
-            image: fetchedData.image,
-          });
+        if (String(data[1][i]).length > 0 && data[1][i] != undefined) {
+          const response = await fetch(`https://ipfs.io/ipfs/${data[1][i]}`);
+          const fetchedData = await response.json(); // Assuming the response data is in JSON format
+          const weiValue = new BigNumber(String(data[0][i])); // Example Wei value (1 ETH)
+
+          // Convert Wei to Ether
+          const ethValue = weiValue.dividedBy(
+            new BigNumber("1000000000000000000")
+          );
+          if (ethValue > 0 && String(data[2][i]) == address) {
+            list.push({
+              price: Number(data[0][i]),
+              forSale: String(data[3][i]),
+              seller: String(data[2][i]),
+              name: fetchedData.name,
+              description: fetchedData.description,
+              image: fetchedData.image,
+            });
+          } else if (address == data[2][i]) {
+            mint.push({
+              price: Number(data[0][i]),
+              forSale: String(data[3][i]),
+              seller: String(data[2][i]),
+              name: fetchedData.name,
+              description: fetchedData.description,
+              image: fetchedData.image,
+            });
+          }
+          if (ethValue > 0) {
+            all.push({
+              price: Number(data[0][i]),
+              forSale: String(data[3][i]),
+              seller: String(data[2][i]),
+              name: fetchedData.name,
+              description: fetchedData.description,
+              image: fetchedData.image,
+            });
+          }
         }
-        all.push({
-          price: Number(data[0][i]),
-          forSale: String(data[3][i]),
-          seller: String(data[2][i]),
-          name: fetchedData.name,
-          description: fetchedData.description,
-          image: fetchedData.image,
-        });
       }
       setUserListedNfts(list);
       setUserMintedNfts(mint);
@@ -88,6 +99,9 @@ const State = ({ children }) => {
     address: CAddress,
     abi: CABI,
     functionName: "listNFT",
+    onSuccess() {
+      navigate("/profile");
+    },
   });
 
   const {
@@ -127,15 +141,6 @@ const State = ({ children }) => {
 
   const handleSubmit = async () => {
     try {
-      console.log({
-        image,
-        name,
-        description,
-        attributes,
-        address,
-        listForSale,
-        price,
-      });
       if (listForSale == true && Number(price) <= 0) {
         alert("Price must not be 0");
         return;
@@ -154,9 +159,12 @@ const State = ({ children }) => {
           .catch((error) => {
             console.log(error);
           });
-        setTokenURI(token_URI.data.metaHash.IpfsHash);
+        await setTokenURI(token_URI.data.metaHash.IpfsHash);
         console.log(token_URI.data.metaHash.IpfsHash);
       }
+      await setTimeout(() => {
+        console.log(tokenURI.data.metaHash.IpfsHash);
+      }, 2000);
       if (listForSale == true && price > 0) {
         await listNewNFT({
           args: [ethers.parseEther(String(Number(price))), tokenURI],
@@ -200,29 +208,33 @@ const State = ({ children }) => {
   const getAllNFTs = async () => {
     setLoading(true);
     if (address.length > 0) {
-      alchemy.nft
+      alchemy?.nft
         .getNftsForOwner(address)
         .then(async (data) => {
           console.log(data);
           const nfts = [];
-          await data.ownedNfts.map(async (el) => {
-            if (
-              el.rawMetadata.name != null ||
-              el.rawMetadata.description != undefined
-            ) {
-              nfts.push({
-                name: el.rawMetadata.name,
-                description: el.rawMetadata.description,
-                image: el.rawMetadata.image,
-                attributes: el.rawMetadata.attributes,
-              });
-            } else {
-              const data = await fetch(el.tokenUri.raw);
-              nfts.push({
-                name: el.title,
-                description: el.description,
-                image: data.url,
-              });
+          await data?.ownedNfts.map(async (el) => {
+            if (el.rawMetadata.image.length > 0) {
+              if (
+                el.rawMetadata.name != null ||
+                el.rawMetadata.description != undefined
+              ) {
+                nfts.push({
+                  name: el.rawMetadata.name,
+                  description: el.rawMetadata.description,
+                  image: el.rawMetadata.image,
+                  attributes: el.rawMetadata.attributes,
+                });
+              } else {
+                const data = await fetch(el?.tokenUri?.raw);
+                if (data.url.length > 0) {
+                  nfts.push({
+                    name: el.title,
+                    description: el.description,
+                    image: data.url,
+                  });
+                }
+              }
             }
           });
           setAllAlchemyNfts(nfts);
@@ -248,6 +260,7 @@ const State = ({ children }) => {
   };
 
   useEffect(() => {
+    setAddress(address);
     getAllNFTs();
     handleGetMintedNfts();
     refetch();
@@ -305,7 +318,7 @@ const State = ({ children }) => {
         allContractNfts,
         refetch,
         userListedNfts,
-        userMintedNfts
+        userMintedNfts,
       }}
     >
       {children}

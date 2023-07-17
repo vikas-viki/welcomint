@@ -17,7 +17,7 @@ const NFTcard = ({ nft, buy }) => {
         alt="img"
         className="w-[234px] h-[249px] rounded-[15px] nft-img"
       />
-      <div className="nft-desc hidden flex-col h-[200px] items-center justify-between overflow-hidden " >
+      <div className="nft-desc hidden flex-col h-[200px] items-center justify-between overflow-hidden ">
         <span className="  rounded-[15px]  text-[#fff] text-center h-full">
           {nft.description.length > 0
             ? nft.description.length >= 100
