@@ -1,12 +1,13 @@
 import { useContext } from "react";
 import { Context } from "../context/Context.jsx";
 import NFTcard from "../components/NFTcard.jsx";
-
+import 'react-toastify/dist/ReactToastify.css';
 
 const Home = () => {
-  const { allContractNfts, loading, address } = useContext(Context);
+  const { renderNFTS, loading, address } = useContext(Context);
   return (
     <div className="w-full h-full px-[30px] bg-slate-200 py-[2.5em] flex flex-col gap-[30px] justify-start">
+      
       {address.length > 0 ? (
         <>
           <div className=" flex flex-wrap gap-[60px] justify-start w-full h-full">
@@ -16,10 +17,16 @@ const Home = () => {
                   Loading...
                 </span>
               </div>
-            ) : (
-              allContractNfts?.map((el, i) => (
+            ) : renderNFTS.length > 0 ? (
+              renderNFTS?.map((el, i) => (
                 <NFTcard key={i} nft={el} buy={true} />
               ))
+            ) : (
+              <div className="flex items-center justify-center h-[80vh] w-full ">
+                <span className="text-[25px] font-poppins font-semibold leading-1 text-center">
+                  Nothing so see 🙄!
+                </span>
+              </div>
             )}
           </div>
         </>

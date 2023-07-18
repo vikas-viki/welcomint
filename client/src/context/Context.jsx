@@ -11,6 +11,8 @@ const alchemy = new Alchemy({
 });
 import { ethers } from "ethers";
 import { CAddress, CABI } from "./Constant.js";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // eslint-disable-next-line react/prop-types
 const State = ({ children }) => {
@@ -33,6 +35,55 @@ const State = ({ children }) => {
   const [userListedNfts, setUserListedNfts] = useState(null);
   const [userMintedNfts, setUserMintedNfts] = useState(null);
   const [allAlchemyNfts, setAllAlchemyNfts] = useState(null);
+  const [renderNFTS, setRenderNFTS] = useState(null);
+
+  const price0 = () =>
+    toast.error("Price must not be 0", {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+
+  const listErr = (data) =>
+    toast.error(data, {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+
+  const details_none = () =>
+    toast.error("Please fill all the deatils.", {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+
+  const buyError = (err) =>
+    toast.error(err, {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
 
   const { refetch } = useContractRead({
     address: CAddress,
@@ -43,7 +94,7 @@ const State = ({ children }) => {
       let list = [];
       let mint = [];
       console.log(data);
-      for (let i = 1; i < data[2].length; i++) {
+      for (let i = 0; i < data[2].length; i++) {
         if (String(data[1][i]).length > 0 && data[1][i] != undefined) {
           const response = await fetch(`https://ipfs.io/ipfs/${data[1][i]}`);
           const fetchedData = await response.json(); // Assuming the response data is in JSON format
@@ -53,6 +104,7 @@ const State = ({ children }) => {
           const ethValue = weiValue.dividedBy(
             new BigNumber("1000000000000000000")
           );
+
           if (ethValue > 0 && String(data[2][i]) == address) {
             list.push({
               price: Number(data[0][i]),
@@ -62,7 +114,8 @@ const State = ({ children }) => {
               description: fetchedData.description,
               image: fetchedData.image,
             });
-          } else if (address == data[2][i]) {
+          }
+          if (address == String(data[2][i])) {
             mint.push({
               price: Number(data[0][i]),
               forSale: String(data[3][i]),
@@ -72,7 +125,7 @@ const State = ({ children }) => {
               image: fetchedData.image,
             });
           }
-          if (ethValue > 0) {
+          if (ethValue > 0 && address != String(data[2][i])) {
             all.push({
               price: Number(data[0][i]),
               forSale: String(data[3][i]),
@@ -80,6 +133,7 @@ const State = ({ children }) => {
               name: fetchedData.name,
               description: fetchedData.description,
               image: fetchedData.image,
+              tokenId: i + 1,
             });
           }
         }
@@ -87,6 +141,30 @@ const State = ({ children }) => {
       setUserListedNfts(list);
       setUserMintedNfts(mint);
       setAllContractNfts(all);
+      setRenderNFTS(all);
+    },
+  });
+
+  const {
+    data: buyData,
+    isLoading: buyLoading,
+    isSuccess: buyNFTSuccess,
+    write: buyNFT,
+  } = useContractWrite({
+    address: CAddress,
+    abi: CABI,
+    functionName: "buyNFT",
+    onSuccess() {
+      navigate("/profile");
+    },
+    onError(data) {
+      const reason = String(data)
+        .split("reason:")[1]
+        .split("nContract Call")[0]
+        .split("Contract Call:")[0]
+        .trim();
+      console.log("err", reason);
+      buyError(reason);
     },
   });
 
@@ -99,8 +177,34 @@ const State = ({ children }) => {
     address: CAddress,
     abi: CABI,
     functionName: "listNFT",
-    onSuccess() {
+    onSuccess(data) {
+      toast.promise(
+        new Promise((resolve) =>
+          setTimeout(() => {
+            resolve();
+          }, 9000)
+        ),
+        {
+          pending: `tx hash: ${data.hash}`,
+          success: "NFT minted successfully",
+          error: "Error occured🤯",
+        },
+        {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        }
+      );
       navigate("/profile");
+      window.location.reload();
+    },
+    onError(data) {
+      listErr(String(data).split(":")[1].split(".")[0]);
     },
   });
 
@@ -142,11 +246,11 @@ const State = ({ children }) => {
   const handleSubmit = async () => {
     try {
       if (listForSale == true && Number(price) <= 0) {
-        alert("Price must not be 0");
+        price0();
         return;
       }
       if (description.length == 0 || image == null) {
-        alert("Please fill all the details to proceed.");
+        details_none();
       } else {
         const data = new FormData();
         data.append("image", image);
@@ -159,20 +263,19 @@ const State = ({ children }) => {
           .catch((error) => {
             console.log(error);
           });
-        await setTokenURI(token_URI.data.metaHash.IpfsHash);
-        console.log(token_URI.data.metaHash.IpfsHash);
-      }
-      await setTimeout(() => {
-        console.log(tokenURI.data.metaHash.IpfsHash);
-      }, 2000);
-      if (listForSale == true && price > 0) {
-        await listNewNFT({
-          args: [ethers.parseEther(String(Number(price))), tokenURI],
-        });
-      } else {
-        await mintNewNFT({
-          args: [tokenURI],
-        });
+        const tokenuri = token_URI.data.metaHash.IpfsHash;
+        await setTokenURI(tokenuri);
+
+        if (listForSale == true && price > 0) {
+          console.log({ tokenuri });
+          await listNewNFT({
+            args: [ethers.parseEther(String(Number(price))), tokenuri],
+          });
+        } else {
+          await mintNewNFT({
+            args: [tokenuri],
+          });
+        }
       }
     } catch (error) {
       console.log(error);
@@ -213,8 +316,8 @@ const State = ({ children }) => {
         .then(async (data) => {
           console.log(data);
           const nfts = [];
-          await data?.ownedNfts.map(async (el) => {
-            if (el.rawMetadata.image.length > 0) {
+          await data?.ownedNfts?.map(async (el) => {
+            if (el?.rawMetadata?.image?.length > 0) {
               if (
                 el.rawMetadata.name != null ||
                 el.rawMetadata.description != undefined
@@ -272,6 +375,10 @@ const State = ({ children }) => {
   }, [listNewNFTData, mintedNFT]);
 
   useEffect(() => {
+    console.log(buyLoading, buyData, buyNFTSuccess);
+  }, [buyLoading, buyData]);
+
+  useEffect(() => {
     if (currentNFTpage == "Listed") {
       setNFTs(userListedNfts);
     } else if (currentNFTpage == "Minted") {
@@ -319,6 +426,11 @@ const State = ({ children }) => {
         refetch,
         userListedNfts,
         userMintedNfts,
+        buyNFT,
+        tokenURI,
+        setAllContractNfts,
+        setRenderNFTS,
+        renderNFTS,
       }}
     >
       {children}

@@ -5,9 +5,17 @@ import { Web3Button, Web3Modal } from "@web3modal/react";
 import { EthereumClient } from "@web3modal/ethereum";
 import { sepolia } from "wagmi";
 import { projectId, wagmiConfig } from "../main.jsx";
+import { useContext } from "react";
+import { Context } from "../context/Context";
 
 const Navbar = () => {
   const chains = [sepolia];
+
+  const {
+    searchedNFT,
+    allContractNfts,
+    setRenderNFTS,
+  } = useContext(Context);
 
   const ethereumClient = new EthereumClient(wagmiConfig, chains);
 
@@ -35,6 +43,14 @@ const Navbar = () => {
           <span>🔍</span>
           <input
             type="text"
+            value={searchedNFT}
+            onChange={(e) => {
+              const searchValue = e.target.value.trim();
+              const filteredNFTs = allContractNfts.filter((el) =>
+                el.name.toLowerCase().includes(searchValue.toLowerCase())
+              );
+              setRenderNFTS(filteredNFTs);
+            }}
             placeholder={` Search NFTs `}
             className="border-2 w-full bg-slate-200 rounded-[8px] p-[10px] flex-1 outline-none"
           />

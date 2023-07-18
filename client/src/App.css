@@ -2,6 +2,9 @@
 .nft-card{
   overflow: hidden;
 }
+.nft-card:hover{
+  padding: 10px;
+}
 
 .nft-card:hover .nft-img{
   transition: all 0.5s;

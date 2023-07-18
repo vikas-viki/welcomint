@@ -1,16 +1,19 @@
 /* eslint-disable react/prop-types */
 import { useWeb3Modal } from "@web3modal/react";
 import "../App.css";
+import { useContext } from "react";
+import { Context } from "../context/Context";
+
 const NFTcard = ({ nft, buy }) => {
   const imageUrl = nft.image.split("/");
-
+  const {buyNFT} = useContext(Context);
   const { isOpen } = useWeb3Modal();
 
   return (
     <div
       className={`border-2 bg-gradient-to-r from-cyan-500 to-blue-500 border-indigo-500 rounded-[19px] ${
         isOpen === false && "drop-shadow-xl"
-      } flex items-center justify-center flex-col w-[243px] h-[309px] cursor-pointer nft-card`}
+      } flex items-center justify-center flex-col w-[243px] h-[309px] cursor-pointer nft-card `}
     >
       <img
         src={`https://gateway.ipfs.io/ipfs/${imageUrl[imageUrl.length - 1]}`}
@@ -26,7 +29,14 @@ const NFTcard = ({ nft, buy }) => {
             : "Unknown"}
         </span>
         {buy == true && (
-          <button className="nft-buy mt-[30px] absolute px-[20px] py-[8px] border-2 border-indigo-600 text-white rounded-[20px] bg-indigo-500  transition-opacity hover:opacity-90">
+          <button className="nft-buy mt-[110px] absolute px-[20px] py-[8px] border-2 border-indigo-600 text-white rounded-[20px] bg-indigo-500  transition-opacity hover:opacity-90"
+          onClick={()=>{
+            console.log(nft);
+            buyNFT({
+              args: [nft.tokenId],
+            });
+          }}
+          >
             BUY
           </button>
         )}
@@ -35,8 +45,8 @@ const NFTcard = ({ nft, buy }) => {
         <div className="flex justify-between">
           <span className="font-bold m-2 py-[5px] font-poppins text-[16px] break-words">
             {nft.name.length > 0
-              ? nft.name.length >= 17
-                ? nft.name.slice(0, 17).trim() + "..."
+              ? nft.name.length >= 10
+                ? nft.name.slice(0, 10).trim() + "..."
                 : nft.name
               : "Unknown"}
           </span>
