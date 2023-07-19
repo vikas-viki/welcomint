@@ -10,7 +10,7 @@ const alchemy = new Alchemy({
   network: Network.ETH_SEPOLIA,
 });
 import { ethers } from "ethers";
-import { CAddress, CABI } from "./Constant.js";
+import { CAddress, CABI, server_url } from "./Constant.js";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -115,7 +115,7 @@ const State = ({ children }) => {
               image: fetchedData.image,
             });
           }
-          if (address == String(data[2][i])) {
+          if (address == String(data[2][i]) && ethValue <= 0) {
             mint.push({
               price: Number(data[0][i]),
               forSale: String(data[3][i]),
@@ -123,6 +123,7 @@ const State = ({ children }) => {
               name: fetchedData.name,
               description: fetchedData.description,
               image: fetchedData.image,
+              tokenId: i + 1,
             });
           }
           if (ethValue > 0 && address != String(data[2][i])) {
@@ -154,17 +155,97 @@ const State = ({ children }) => {
     address: CAddress,
     abi: CABI,
     functionName: "buyNFT",
-    onSuccess() {
+    onSuccess(data) {
+      toast.promise(
+        new Promise((resolve) =>
+          setTimeout(() => {
+            resolve();
+          }, 9000)
+        ),
+        {
+          pending: `tx hash: ${data.hash}`,
+          success: "NFT bought successfully",
+          error: "Error occured🤯",
+        },
+        {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        }
+      );
       navigate("/profile");
     },
     onError(data) {
-      const reason = String(data)
-        .split("reason:")[1]
-        .split("nContract Call")[0]
-        .split("Contract Call:")[0]
-        .trim();
-      console.log("err", reason);
-      buyError(reason);
+      if (String(data).includes("User denied transaction")) {
+        buyError("User denied transaction");
+      } else if (String(data).includes("Details: err:")) {
+        let err = String(data).split("Details: err:")[1].split(" * price +")[0];
+        console.log(err);
+        buyError(err);
+      } else {
+        const reason = String(data)
+          .split("reason:")[1]
+          .split("nContract Call")[0]
+          .split("Contract Call:")[0]
+          .trim();
+        console.log("err", reason);
+        buyError(reason);
+      }
+    },
+  });
+
+  const {
+    write: listNFTForSale,
+  } = useContractWrite({
+    address: CAddress,
+    abi: CABI,
+    functionName: "listForSale",
+    onSuccess(data) {
+      toast.promise(
+        new Promise((resolve) =>
+          setTimeout(() => {
+            resolve();
+          }, 9000)
+        ),
+        {
+          pending: `tx hash: ${data.hash}`,
+          success: "NFT listed successfully",
+          error: "Error occured🤯",
+        },
+        {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        }
+      );
+      navigate("/profile");
+    },
+    onError(data) {
+      if (String(data).includes("User denied transaction")) {
+        buyError("User denied transaction");
+      } else if (String(data).includes("Details: err:")) {
+        let err = String(data).split("Details: err:")[1].split(" * price +")[0];
+        console.log(err);
+        buyError(err);
+      } else {
+        const reason = String(data)
+          .split("reason:")[1]
+          .split("nContract Call")[0]
+          .split("Contract Call:")[0]
+          .trim();
+        console.log("err", reason);
+        buyError(reason);
+      }
     },
   });
 
@@ -217,6 +298,47 @@ const State = ({ children }) => {
     address: CAddress,
     abi: CABI,
     functionName: "safeMint",
+    onSuccess(data) {
+      toast.promise(
+        new Promise((resolve) =>
+          setTimeout(() => {
+            resolve();
+          }, 9000)
+        ),
+        {
+          pending: `tx hash: ${data.hash}`,
+          success: "NFT minted successfully",
+          error: "Error occured🤯",
+        },
+        {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        }
+      );
+    },
+    onError(data) {
+      if (String(data).includes("User denied transaction")) {
+        buyError("User denied transaction");
+      } else if (String(data).includes("Details: err:")) {
+        let err = String(data).split("Details: err:")[1].split(" * price +")[0];
+        console.log(err);
+        buyError(err);
+      } else {
+        const reason = String(data)
+          .split("reason:")[1]
+          .split("nContract Call")[0]
+          .split("Contract Call:")[0]
+          .trim();
+        console.log("err", reason);
+        buyError(reason);
+      }
+    },
   });
 
   const data1 = useAccount({
@@ -256,10 +378,10 @@ const State = ({ children }) => {
         data.append("image", image);
         data.append("name", name);
         data.append("description", description);
-        data.append("attributes", attributes);
+        data.append("attributes", JSON.stringify(attributes));
         data.append("address", address);
         const token_URI = await axios
-          .post("http://localhost:5000/api/v1/upload-ipfs", data)
+          .post(server_url, data)
           .catch((error) => {
             console.log(error);
           });
@@ -431,6 +553,7 @@ const State = ({ children }) => {
         setAllContractNfts,
         setRenderNFTS,
         renderNFTS,
+        listNFTForSale
       }}
     >
       {children}
