@@ -6,7 +6,7 @@ import BigNumber from "bignumber.js";
 export const Context = createContext();
 import { Alchemy, Network } from "alchemy-sdk";
 const alchemy = new Alchemy({
-  apiKey: "jAEKmV9y62iWG6flNQ7KpWkikKXv9PJk",
+  apiKey: import.meta.APIKEY,
   network: Network.ETH_SEPOLIA,
 });
 import { ethers } from "ethers";

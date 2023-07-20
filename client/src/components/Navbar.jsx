@@ -15,6 +15,7 @@ const Navbar = () => {
     searchedNFT,
     allContractNfts,
     setRenderNFTS,
+    refetch
   } = useContext(Context);
 
   const ethereumClient = new EthereumClient(wagmiConfig, chains);
@@ -30,6 +31,7 @@ const Navbar = () => {
         <Link
           to="/"
           className="py-3 px-2 font-poppins font-bold rounded-[20px]"
+          onClick={refetch}
         >
           Home
         </Link>

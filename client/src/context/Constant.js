@@ -1,5 +1,5 @@
 export const CAddress = '0xF1C65417fd15686ec52e2E792b5a970C1B8a6916';
-export const server_url = "http://localhost:5000/api/v1/upload-ipfs";
+export const server_url = import.meta.API;
 export const CABI = [
 	{
 		"inputs": [],
