@@ -1,4 +1,4 @@
-export const CAddress = '0x96ABd721a8d2a64CA7427009648F746C761f33aE';
+export const CAddress = '0xF1C65417fd15686ec52e2E792b5a970C1B8a6916';
 export const server_url = "http://localhost:5000/api/v1/upload-ipfs";
 export const CABI = [
 	{

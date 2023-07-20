@@ -70,10 +70,10 @@ const Mint = () => {
                 type="text"
                 name="name"
                 placeholder="Background"
-                value={el.title}
+                value={el.trait_type}
                 className="border-[3px] border-indigo-500  font-normal font-poppins focus:border-green-500 outline-none rounded-[7px] p-3 w-full"
                 onChange={(e) => {
-                  handleAttributeChange(e, i, "title");
+                  handleAttributeChange(e, i, "trait_type");
                 }}
               />
               <input
@@ -90,13 +90,13 @@ const Mint = () => {
                   if (
                     event.keyCode === 13 &&
                     !event.shiftKey &&
-                    attributes[attributes.length - 1].title.length > 0 &&
+                    attributes[attributes.length - 1].trait_type.length > 0 &&
                     attributes[attributes.length - 1].value.length > 0
                   ) {
                     // The user pressed Enter without Shift key
                     console.log("Enter key pressed without Shift");
 
-                    setAttributes([...attributes, { title: "", value: "" }]);
+                    setAttributes([...attributes, { trait_type: "", value: "" }]);
                     console.log(attributes);
                   }
                 }}

@@ -19,7 +19,7 @@ const State = ({ children }) => {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [attributes, setAttributes] = useState([{ title: "", value: "" }]);
+  const [attributes, setAttributes] = useState([{ trait_type: "", value: "" }]);
   const [image, setImage] = useState();
   const [address, setAddress] = useState("");
   const [price, setPrice] = useState("");
@@ -143,6 +143,7 @@ const State = ({ children }) => {
       setUserMintedNfts(mint);
       setAllContractNfts(all);
       setRenderNFTS(all);
+      console.log(all);
     },
   });
 
@@ -199,9 +200,7 @@ const State = ({ children }) => {
     },
   });
 
-  const {
-    write: listNFTForSale,
-  } = useContractWrite({
+  const { write: listNFTForSale } = useContractWrite({
     address: CAddress,
     abi: CABI,
     functionName: "listForSale",
@@ -229,6 +228,7 @@ const State = ({ children }) => {
         }
       );
       navigate("/profile");
+      
     },
     onError(data) {
       if (String(data).includes("User denied transaction")) {
@@ -282,7 +282,7 @@ const State = ({ children }) => {
         }
       );
       navigate("/profile");
-      window.location.reload();
+      resetAll();
     },
     onError(data) {
       listErr(String(data).split(":")[1].split(".")[0]);
@@ -378,16 +378,28 @@ const State = ({ children }) => {
         data.append("image", image);
         data.append("name", name);
         data.append("description", description);
-        data.append("attributes", JSON.stringify(attributes));
         data.append("address", address);
-        const token_URI = await axios
-          .post(server_url, data)
-          .catch((error) => {
-            console.log(error);
-          });
+
+        // Loop through the attributes array and append each attribute as a separate entry
+        attributes.forEach((attribute, index) => {
+          data.append(`attributes[${index}][trait_type]`, attribute.trait_type);
+          data.append(`attributes[${index}][value]`, attribute.value);
+
+          // If the attribute has a display_type property, append it as well
+          if (attribute.display_type) {
+            data.append(
+              `attributes[${index}][display_type]`,
+              attribute.display_type
+            );
+          }
+        });
+
+        const token_URI = await axios.post(server_url, data).catch((error) => {
+          console.log(error);
+        });
         const tokenuri = token_URI.data.metaHash.IpfsHash;
         await setTokenURI(tokenuri);
-
+        console.log({ tokenuri });
         if (listForSale == true && price > 0) {
           console.log({ tokenuri });
           await listNewNFT({
@@ -404,6 +416,16 @@ const State = ({ children }) => {
     }
     refetch();
   };
+
+  const resetAll = () =>{
+    setListForSale(false);
+    setDescription("");
+    setName("");
+    setImage(null);
+    setSelectedImage(null);
+    setPrice("");
+    setAttributes([{trait_type: "", value: ""}]);
+  }
 
   const handleGetMintedNfts = async () => {
     const data = new FormData();
@@ -503,8 +525,10 @@ const State = ({ children }) => {
   useEffect(() => {
     if (currentNFTpage == "Listed") {
       setNFTs(userListedNfts);
+      refetch();
     } else if (currentNFTpage == "Minted") {
       setNFTs(userMintedNfts);
+      refetch();
     } else {
       setNFTs(allAlchemyNfts);
     }
@@ -553,7 +577,7 @@ const State = ({ children }) => {
         setAllContractNfts,
         setRenderNFTS,
         renderNFTS,
-        listNFTForSale
+        listNFTForSale,
       }}
     >
       {children}
