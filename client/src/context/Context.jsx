@@ -228,7 +228,7 @@ const State = ({ children }) => {
         }
       );
       navigate("/profile");
-      
+      resetAll();
     },
     onError(data) {
       if (String(data).includes("User denied transaction")) {
