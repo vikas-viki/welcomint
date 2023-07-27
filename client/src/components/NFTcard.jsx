@@ -7,7 +7,7 @@ import BigNumber from "bignumber.js";
 
 const NFTcard = ({ nft, buy }) => {
   const imageUrl = nft.image.split("/");
-  const { buyNFT, listNFTForSale } = useContext(Context);
+  const { buyNFT, listNFTForSale,listForSaleError, currentNFTpage, cancelNFTListing } = useContext(Context);
   const { isOpen } = useWeb3Modal();
   const [price, setPrice] = useState("");
 
@@ -17,8 +17,14 @@ const NFTcard = ({ nft, buy }) => {
         args: [nft.tokenId, new BigNumber(price * 1e18)],
       });
     } else {
-      alert("Price must not be 0");
+      listForSaleError("Price must be greate than 0");
     }
+  };
+
+  const cancelListing = () => {
+      cancelNFTListing({
+        args: [nft.tokenId],
+      });
   };
 
   return (
@@ -61,9 +67,16 @@ const NFTcard = ({ nft, buy }) => {
               onChange={(e) => {
                 setPrice(e.target.value);
               }}
-              className="text-[black] font-bold w-[180px] outline-none border-none rounded"
+              placeholder="0.1 ETH"
+              className="text-[black] px-2 w-[180px] outline-none border-none rounded"
             />
             <button className="font-bold" onClick={listNFT}>LIST FOR SALE</button>
+          </div>
+        )}
+        {nft.price > 0 && currentNFTpage == "Listed" && (
+          <div className="nft-buy mt-[110px] gap-[8px] justify-center flex items-center flex-col absolute  px-[20px] py-[8px] border-2 border-indigo-600 text-white rounded-[20px] bg-indigo-500  transition-opacity hover:opacity-90">
+            
+            <button className="font-bold" onClick={cancelListing}>CANCEL LISTING</button>
           </div>
         )}
       </div>

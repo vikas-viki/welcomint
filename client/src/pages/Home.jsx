@@ -8,7 +8,7 @@ const Home = () => {
   return (
     <div className="w-full h-full px-[30px] bg-slate-200 py-[2.5em] flex flex-col gap-[30px] justify-start">
       
-      {address.length > 0 ? (
+      {address?.length > 0 ? (
         <>
           <div className=" flex flex-wrap gap-[60px] justify-start w-full h-full">
             {loading == true ? (
@@ -17,7 +17,7 @@ const Home = () => {
                   Loading...
                 </span>
               </div>
-            ) : renderNFTS.length > 0 ? (
+            ) : renderNFTS?.length > 0 ? (
               renderNFTS?.map((el, i) => (
                 <NFTcard key={i} nft={el} buy={true} />
               ))

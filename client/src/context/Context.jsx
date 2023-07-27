@@ -85,6 +85,18 @@ const State = ({ children }) => {
       theme: "light",
     });
 
+    const listForSaleError = (err) =>
+    toast.error(err, {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+
   const { refetch } = useContractRead({
     address: CAddress,
     abi: CABI,
@@ -113,6 +125,7 @@ const State = ({ children }) => {
               name: fetchedData.name,
               description: fetchedData.description,
               image: fetchedData.image,
+              tokenId: i + 1
             });
           }
           if (address == String(data[2][i]) && ethValue <= 0) {
@@ -204,6 +217,55 @@ const State = ({ children }) => {
     address: CAddress,
     abi: CABI,
     functionName: "listForSale",
+    onSuccess(data) {
+      toast.promise(
+        new Promise((resolve) =>
+          setTimeout(() => {
+            resolve();
+          }, 9000)
+        ),
+        {
+          pending: `tx hash: ${data.hash}`,
+          success: "NFT listed successfully",
+          error: "Error occured🤯",
+        },
+        {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        }
+      );
+      navigate("/profile");
+      resetAll();
+    },
+    onError(data) {
+      if (String(data).includes("User denied transaction")) {
+        buyError("User denied transaction");
+      } else if (String(data).includes("Details: err:")) {
+        let err = String(data).split("Details: err:")[1].split(" * price +")[0];
+        console.log(err);
+        buyError(err);
+      } else {
+        const reason = String(data)
+          .split("reason:")[1]
+          .split("nContract Call")[0]
+          .split("Contract Call:")[0]
+          .trim();
+        console.log("err", reason);
+        buyError(reason);
+      }
+    },
+  });
+
+  const { write: cancelNFTListing } = useContractWrite({
+    address: CAddress,
+    abi: CABI,
+    functionName: "cancelListing",
     onSuccess(data) {
       toast.promise(
         new Promise((resolve) =>
@@ -427,26 +489,6 @@ const State = ({ children }) => {
     setAttributes([{trait_type: "", value: ""}]);
   }
 
-  const handleGetMintedNfts = async () => {
-    const data = new FormData();
-    data.append("address", address);
-    const nfts = await axios
-      .post("http://localhost:5000/api/v1/get-nfts", {
-        address: address,
-      })
-      .then((data) => {
-        console.log("SERVER", data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-
-    if (nfts === null) {
-      console.log("new user ");
-    } else {
-      console.log(nfts);
-    }
-  };
 
   const handleImageRemove = () => {
     setSelectedImage(null);
@@ -509,7 +551,6 @@ const State = ({ children }) => {
   useEffect(() => {
     setAddress(address);
     getAllNFTs();
-    handleGetMintedNfts();
     refetch();
   }, [address]);
 
@@ -550,7 +591,6 @@ const State = ({ children }) => {
         description,
         setDescription,
         handleAttributeChange,
-        handleGetMintedNfts,
         handleImageChange,
         handleImageRemove,
         handleSubmit,
@@ -578,6 +618,8 @@ const State = ({ children }) => {
         setRenderNFTS,
         renderNFTS,
         listNFTForSale,
+        listForSaleError,
+        cancelNFTListing
       }}
     >
       {children}

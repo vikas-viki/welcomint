@@ -7,6 +7,7 @@ import { sepolia } from "wagmi";
 import { projectId, wagmiConfig } from "../main.jsx";
 import { useContext } from "react";
 import { Context } from "../context/Context";
+import welcomint from "../assets/welcomint.png";
 
 const Navbar = () => {
   const chains = [sepolia];
@@ -64,6 +65,9 @@ const Navbar = () => {
             projectId={projectId}
             ethereumClient={ethereumClient}
             defaultChain={sepolia}
+            themeVariables={{
+              '--w3m-logo-image-url': welcomint
+            }}
           />
           <Link to="/profile">
             <img src={profile} className="w-[70px] cursor-pointer" alt="0" />
