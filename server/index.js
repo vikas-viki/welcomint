@@ -14,6 +14,10 @@ app.use(express.json());
 
 app.use('/api/v1', require('./upload.js'));
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ message: "Everything's up!" });
+})
+
 
 app.listen(port, () => {
   console.log(`welcomint server is listening at http://localhost:${port}`)
